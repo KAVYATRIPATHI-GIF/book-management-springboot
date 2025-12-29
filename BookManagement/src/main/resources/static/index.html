@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Book Management CRUD</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card {
+            width: 480px;
+            padding: 25px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(15px);
+            box-shadow: 0 25px 40px rgba(0, 0, 0, 0.25);
+            color: #fff;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 14px;
+            margin-bottom: 12px;
+            border-radius: 10px;
+            border: none;
+            outline: none;
+            font-size: 15px;
+        }
+
+        input:focus {
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.6);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            margin: 6px 0;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            color: #fff;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 18px rgba(0,0,0,0.3);
+        }
+
+        .post {
+            background: linear-gradient(135deg, #43e97b, #38f9d7);
+        }
+
+        .get {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+        }
+
+        .put {
+            background: linear-gradient(135deg, #fbc2eb, #a6c1ee);
+            color: #222;
+        }
+
+        .delete {
+            background: linear-gradient(135deg, #ff0844, #ffb199);
+        }
+
+        /* TABLE STYLES */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background: rgba(255, 255, 255, 0.95);
+            color: #222;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background: linear-gradient(to right, #ff8177 0%, #ff867a 0%, #ff8c7f 21%, #f99185 52%, #cf556c 78%, #b12a5b 100%);
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background: #f2f2f2;
+        }
+
+        #output {
+            margin-top: 15px;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 12px;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h1>Book Manager</h1>
+
+    <input type="number" id="id" placeholder="Book ID (for update / delete)">
+    <input type="text" id="title" placeholder="Book Title">
+    <input type="text" id="author" placeholder="Author Name">
+
+    <button class="btn post" onclick="addBook()">Add Book</button>
+    <button class="btn get" onclick="getBooks()">Get Books</button>
+    <button class="btn put" onclick="updateBook()"> Update Book</button>
+    <button class="btn delete" onclick="deleteBook()"> Delete Book</button>
+
+    <div id="output"></div>
+
+    <footer>Spring Boot CRUD • Frontend Demo</footer>
+</div>
+
+<script>
+    const baseUrl = "http://localhost:9090/books";
+
+    function addBook() {
+        fetch(baseUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                title: document.getElementById("title").value,
+                author: document.getElementById("author").value
+            })
+        })
+        .then(res => res.json())
+        .then(data => showMessage("Book added successfully"));
+    }
+
+    function getBooks() {
+        fetch(baseUrl)
+            .then(res => res.json())
+            .then(data => showTable(data));
+    }
+
+    function updateBook() {
+        const id = document.getElementById("id").value;
+
+        fetch(`${baseUrl}/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                title: document.getElementById("title").value,
+                author: document.getElementById("author").value
+            })
+        })
+        .then(res => res.json())
+        .then(data => showMessage("Book updated successfully"));
+    }
+
+    function deleteBook() {
+        const id = document.getElementById("id").value;
+
+        fetch(`${baseUrl}/${id}`, {
+            method: "DELETE"
+        })
+        .then(res => res.text())
+        .then(data => showMessage(data));
+    }
+
+    function showTable(books) {
+        if (books.length === 0) {
+            document.getElementById("output").innerHTML =
+                "<p style='color:white;'>No books available</p>";
+            return;
+        }
+
+        let table = `
+            <table>
+                <tr>
+                    <th>ID</th>
+                    <th>Title</th>
+                    <th>Author</th>
+                </tr>
+        `;
+
+        books.forEach(book => {
+            table += `
+                <tr>
+                    <td>${book.id}</td>
+                    <td>${book.title}</td>
+                    <td>${book.author}</td>
+                </tr>
+            `;
+        });
+
+        table += "</table>";
+
+        document.getElementById("output").innerHTML = table;
+    }
+
+    function showMessage(msg) {
+        document.getElementById("output").innerHTML =
+            `<p style="color:white;">${msg}</p>`;
+    }
+</script>
+
+</body>
+</html>
